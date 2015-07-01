@@ -14,7 +14,11 @@
 
 module Codec.MIME.Decode where
 
+import qualified Data.ByteString as B
+import qualified Data.Text as T
 import Data.Char
+-- import Data.Word
+import Data.Text.Encoding ( encodeUtf8 )
 
 import Codec.MIME.QuotedPrintable as QP
 import Codec.MIME.Base64 as Base64
@@ -24,12 +28,12 @@ import Codec.MIME.Base64 as Base64
 -- the only two encodings supported. If you supply anything else
 -- for @enc@, @decodeBody@ returns @str@.
 -- 
-decodeBody :: String -> String -> String
+decodeBody :: String -> String -> B.ByteString
 decodeBody enc body =
  case map toLower enc of
-   "base64"           -> Base64.decodeToString body
-   "quoted-printable" -> QP.decode body
-   _ -> body
+   "base64"           -> B.pack $ Base64.decode body
+   "quoted-printable" -> encodeUtf8 $ T.pack $ QP.decode body
+   _ -> encodeUtf8 $ T.pack $ body
 
 -- Decoding of RFC 2047's "encoded-words" production
 -- (as used in email-headers and some HTTP header cases

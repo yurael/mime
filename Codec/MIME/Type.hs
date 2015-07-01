@@ -15,6 +15,7 @@
 --------------------------------------------------------------------
 module Codec.MIME.Type where
 
+import qualified Data.ByteString as B
 import qualified Data.Text as T
 import Data.Monoid ((<>))
 
@@ -139,7 +140,7 @@ showMultipart m =
    Extension e -> e
    OtherMulti e -> e
    
-type Content = T.Text
+type Content = B.ByteString
 
 data MIMEValue = MIMEValue
       { mime_val_type     :: Type

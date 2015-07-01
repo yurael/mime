@@ -32,7 +32,9 @@ import Data.Char
 import Data.Maybe
 import qualified Data.List as L
 import Debug.Trace ( trace )
+import qualified Data.ByteString as B
 import qualified Data.Text as T
+import Data.Text.Encoding ( encodeUtf8 )
 import Data.Monoid(Monoid(..), (<>))
 
 enableTrace :: Bool
@@ -96,11 +98,11 @@ paramPairs = map paramPair
   where
     paramPair (MIMEParam a b) = (a,b)
 
-processBody :: [MIMEParam] -> T.Text -> T.Text
+processBody :: [MIMEParam] -> T.Text -> B.ByteString
 processBody headers body =
   case lookupField "content-transfer-encoding" $ paramPairs headers of
-    Nothing -> body
-    Just v  -> T.pack $ decodeBody (T.unpack v) $ T.unpack body
+    Nothing -> encodeUtf8 body
+    Just v  -> decodeBody (T.unpack v) $ T.unpack body
 
 normalizeCRLF :: T.Text -> T.Text
 normalizeCRLF t
@@ -139,12 +141,12 @@ parseMultipart mty body =
       ", has no required boundary parameter. Defaulting to text/plain") $
       (nullMIMEValue{ mime_val_type = defaultType
                     , mime_val_disp = Nothing
-		    , mime_val_content = Single body
-		    }, "")
+        , mime_val_content = Single (encodeUtf8 body)
+        }, "")
     Just bnd -> (nullMIMEValue { mime_val_type = mty
                                , mime_val_disp = Nothing
-			       , mime_val_content = Multi vals
-			       }, rs)
+             , mime_val_content = Multi vals
+             }, rs)
       where (vals,rs) = splitMulti bnd body
 
 splitMulti :: T.Text -> T.Text -> ([MIMEValue], T.Text)
